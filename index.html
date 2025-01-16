@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Pattern Animation</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+        video {
+            display: block;
+            margin: auto;
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <video id="video" controls autoplay loop muted></video>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+
+        const videoElement = document.getElementById('video');
+        let frame = 0;
+
+        // Set up MediaRecorder to capture canvas output
+        const stream = canvas.captureStream(30); // Capture at 30fps
+        const mediaRecorder = new MediaRecorder(stream);
+        const recordedChunks = [];
+
+        mediaRecorder.ondataavailable = function(event) {
+            recordedChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = function() {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            videoElement.src = url; // Set the video source to the recorded video
+        };
+
+        // Create a simple test pattern (like a moving square)
+        function drawTestPattern() {
+            ctx.clearRect(0, 0, width, height); // Clear previous frame
+            ctx.fillStyle = 'red';
+            ctx.fillRect((frame % width), height / 2 - 25, 50, 50); // Moving red square
+        }
+
+        function animate() {
+            drawTestPattern();
+            frame++;
+            requestAnimationFrame(animate); // Continue the animation loop
+        }
+
+        mediaRecorder.start(); // Start recording
+
+        animate(); // Start drawing the pattern
+
+        // Stop recording after 10 seconds
+        setTimeout(() => {
+            mediaRecorder.stop();
+        }, 10000); // Stop after 10 seconds
+    </script>
+</body>
+</html>
