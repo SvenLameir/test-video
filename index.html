@@ -3,75 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Pattern Animation</title>
+    <title>Test Pattern Animation with Time</title>
     <style>
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
             overflow: hidden;
+            background-color: #222;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
         }
-        canvas {
-            display: block;
+        .container {
+            position: relative;
+            width: 80vmin;
+            height: 80vmin;
+            border: 10px solid white;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(20px, 1fr));
+            grid-template-rows: repeat(auto-fill, minmax(20px, 1fr));
         }
-        video {
-            display: block;
-            margin: auto;
-            max-width: 100%;
+        .cell {
+            border: 1px solid white;
+            box-sizing: border-box;
+        }
+        .time-display {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <canvas id="canvas"></canvas>
-    <video id="video" controls autoplay loop muted></video>
+    <div class="container">
+        <div id="time" class="time-display"></div>
+        <!-- Grid cells will be generated here -->
+    </div>
 
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        canvas.width = width;
-        canvas.height = height;
+        const container = document.querySelector('.container');
 
-        const videoElement = document.getElementById('video');
-        let frame = 0;
+        function createGridCells() {
+            // Clear existing cells
+            container.innerHTML = '<div id="time" class="time-display"></div>';
 
-        // Set up MediaRecorder to capture canvas output
-        const stream = canvas.captureStream(30); // Capture at 30fps
-        const mediaRecorder = new MediaRecorder(stream);
-        const recordedChunks = [];
+            // Calculate the number of cells based on container dimensions
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+            const cellSize = 20; // Minimum cell size in pixels
 
-        mediaRecorder.ondataavailable = function(event) {
-            recordedChunks.push(event.data);
-        };
+            const cols = Math.floor(containerWidth / cellSize);
+            const rows = Math.floor(containerHeight / cellSize);
+            const totalCells = cols * rows;
 
-        mediaRecorder.onstop = function() {
-            const blob = new Blob(recordedChunks, { type: 'video/webm' });
-            const url = URL.createObjectURL(blob);
-            videoElement.src = url; // Set the video source to the recorded video
-        };
-
-        // Create a simple test pattern (like a moving square)
-        function drawTestPattern() {
-            ctx.clearRect(0, 0, width, height); // Clear previous frame
-            ctx.fillStyle = 'red';
-            ctx.fillRect((frame % width), height / 2 - 25, 50, 50); // Moving red square
+            // Create and append cells
+            for (let i = 0; i < totalCells; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                container.appendChild(cell);
+            }
         }
 
-        function animate() {
-            drawTestPattern();
-            frame++;
-            requestAnimationFrame(animate); // Continue the animation loop
+        function updateTime() {
+            const timeElement = document.getElementById('time');
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            timeElement.textContent = timeString;
         }
 
-        mediaRecorder.start(); // Start recording
+        // Initial grid setup
+        createGridCells();
+        updateTime();
 
-        animate(); // Start drawing the pattern
+        // Update grid on window resize
+        window.addEventListener('resize', createGridCells);
 
-        // Stop recording after 10 seconds
-        setTimeout(() => {
-            mediaRecorder.stop();
-        }, 10000); // Stop after 10 seconds
+        // Update time every second
+        setInterval(updateTime, 1000);
     </script>
 </body>
 </html>
