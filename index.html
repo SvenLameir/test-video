@@ -28,13 +28,17 @@
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        canvas.width = width;
-        canvas.height = height;
-
         const videoElement = document.getElementById('video');
         let frame = 0;
+
+        // Function to adjust canvas size
+        function adjustCanvasSize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        // Adjust canvas size on page load
+        adjustCanvasSize();
 
         // Set up MediaRecorder to capture canvas output
         const stream = canvas.captureStream(30); // Capture at 30fps
@@ -53,9 +57,9 @@
 
         // Create a simple test pattern (like a moving square)
         function drawTestPattern() {
-            ctx.clearRect(0, 0, width, height); // Clear previous frame
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear previous frame
             ctx.fillStyle = 'red';
-            ctx.fillRect((frame % width), height / 2 - 25, 50, 50); // Moving red square
+            ctx.fillRect((frame % canvas.width), canvas.height / 2 - 25, 50, 50); // Moving red square
         }
 
         function animate() {
@@ -72,6 +76,9 @@
         setTimeout(() => {
             mediaRecorder.stop();
         }, 10000); // Stop after 10 seconds
+
+        // Adjust canvas size when the window is resized
+        window.addEventListener('resize', adjustCanvasSize);
     </script>
 </body>
 </html>
